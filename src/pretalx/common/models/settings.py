@@ -43,6 +43,9 @@ hierarkey.add_default('custom_domain', '', str)
 hierarkey.add_default('use_tracks', 'True', bool)
 hierarkey.add_default('present_multiple_times', 'False', bool)
 
+# IFF extensions
+hierarkey.add_default('require_accept_terms', 'False', bool)
+
 hierarkey.add_default('display_header_pattern', '', str)
 
 hierarkey.add_default('cfp_workflow', '', str)

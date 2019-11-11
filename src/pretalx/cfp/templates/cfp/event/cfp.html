@@ -1,5 +1,7 @@
 {% extends "cfp/event/base.html" %}
 {% load i18n %}
+{% load compress %}
+{% load static %}
 {% load orga_edit_link %}
 {% load rich_text %}
 {% load rules %}
@@ -8,6 +10,7 @@
 {% has_perm 'agenda.view_schedule' request.user request.event as can_view_schedule %}
 {% has_perm 'agenda.view_sneak_peek' request.user request.event as can_view_sneak_peek %}
 {% has_perm 'orga.edit_cfp' request.user request.event as can_edit_cfp %}
+{% compress js %}<script defer src="{% static "cfp/js/requireAcceptTerms.js" %}"></script>{% endcompress %}
     <div class="d-flex">
         <h1>{{ cfp.headline|default:"" }}</h1>
         {% if can_edit_cfp %}{% orga_edit_link request.event.cfp.urls.text %}{% endif %}
@@ -28,6 +31,22 @@
             </strong>
         </p>
     {% endif %}
+
+    {% if cfp.is_open %}
+        <div>
+            {% if request.event.settings.require_accept_terms %}
+                <div>
+                    <label>
+                        <input type="checkbox" id="require-accept-terms-checkbox">
+                        <strong>
+                            {% trans "I have read the instructions above and I will follow them to complete this form" %}
+                        </strong>
+                    </label>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
     <div class="row mb-4 url-links">
         {% if can_view_schedule %}
             <a class="btn btn-info btn-lg btn-block" href="{{ request.event.urls.schedule }}">
@@ -43,7 +62,8 @@
                 {% trans "Edit or view your submissions" %}
             </a>
         {% endif %}
-        <a class="btn btn-success btn-lg btn-block {% if not cfp.is_open and not access_code.is_valid %}disabled{% endif %}"
+        <a class="btn btn-success btn-lg btn-block {% if not cfp.is_open and not access_code.is_valid or request.event.settings.require_accept_terms %}disabled{% endif %}"
+            {% if cfp.is_open and request.event.settings.require_accept_terms %}data-accept-terms="true"{% endif %}
             href="{{ request.event.urls.submit }}{{ submit_qs }}">
         {% if cfp.is_open or access_code.is_valid %}
             {% trans "Submit a proposal" %}

@@ -26,6 +26,11 @@ class CfPSettingsForm(ReadOnlyFlag, I18nFormMixin, HierarkeyForm):
         required=False,
         help_text=_('Show the time and date the CfP ends to potential speakers.'),
     )
+    require_accept_terms = forms.BooleanField(
+        label=_('Require accept terms'),
+        required=False,
+        help_text=_('Require speakers to confirm they accept the CFP terms before submitting a talk'),
+    )
     cfp_request_abstract = forms.BooleanField(label='', required=False)
     cfp_request_description = forms.BooleanField(label='', required=False)
     cfp_request_notes = forms.BooleanField(label='', required=False)
