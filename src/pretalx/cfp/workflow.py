@@ -9,6 +9,7 @@ from i18nfield.utils import I18nJSONEncoder
 from pretalx.common.utils import language
 from pretalx.person.forms import SpeakerProfileForm, UserForm
 from pretalx.submission.forms import InfoForm, QuestionsForm
+from pretalx_iff_dif.forms import DifForm
 
 MARKDOWN_SUPPORT = {
     "submission_abstract", "submission_description", "submission_notes", "profile_biography",
@@ -40,6 +41,14 @@ DEFAULT_CFP_STEPS = {
             "icon_label": _("Account"),
             "identifier": "user",
             "form_class": UserForm,
+        },
+        {
+            "title": _("Diversity and Inclusion Fund for IFF Speakers"),
+            "text": _("The IFF’s Diversity and Inclusion Fund (DIF) was created to tackle issues that make participation in the Internet Freedom Festival difficult for individuals from underrepresented or marginalized communities. Our goal is to ensure that these individuals take part and lead important conversations that impact the future of Internet Freedom, and ensure their experiences and opinions are well represented."),
+            "icon": "users",
+            "icon_label": _("DiF"),
+            "identifier": "dif",
+            "form_class": DifForm,
         },
         {
             "title": _("Tell us something about yourself!"),
@@ -90,7 +99,8 @@ class CfPWorkflow:
             for key in ("icon", ):
                 step[key] = DEFAULT_CFP_STEPS["steps"][index][key]
             identifier = step.get("identifier", str(index))
-            fields = {field.get("key"): field for field in step.get("fields", [])}
+            fields = {
+                field.get("key"): field for field in step.get("fields", [])}
             if identifier != "user":
                 step["fields"] = [
                     {
@@ -98,13 +108,15 @@ class CfPWorkflow:
                         "key": key,
                         "label": i18n_string(field.label, locales),
                         "help_text": i18n_string(
-                            fields.get(key, {}).get("help_text") or getattr(field, 'original_help_text', field.help_text),
+                            fields.get(key, {}).get("help_text") or getattr(
+                                field, 'original_help_text', field.help_text),
                             locales,
                         ),
                         "full_help_text": field.help_text,
                         "required": field.required,
                     }
-                    for key, field in DEFAULT_CFP_STEPS["steps"][index]["form_class"](event=event).fields.items()  # TODO we rely on ordering here
+                    # TODO we rely on ordering here
+                    for key, field in DEFAULT_CFP_STEPS["steps"][index]["form_class"](event=event).fields.items()
                 ]
             self.steps_dict[identifier] = step
 
