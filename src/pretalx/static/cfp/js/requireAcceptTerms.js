@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const $submitPropsalBtn = $("a[data-accept-terms='true']");
-  const $requireAcceptTermsCheckbox = $("#require-accept-terms-checkbox");
+  const $requireAcceptTermsCheckbox = $("#require_accept_terms_checkbox");
 
   // do nothing if require-accept-terms is not enabled
   if (!$submitPropsalBtn.length) {

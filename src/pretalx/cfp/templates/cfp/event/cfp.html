@@ -33,14 +33,14 @@
     {% endif %}
 
     {% if cfp.is_open %}
-        <div>
+        <div class="mt-4 mb-2">
             {% if request.event.settings.require_accept_terms %}
-                <div>
-                    <label>
-                        <input type="checkbox" id="require-accept-terms-checkbox">
-                        <strong>
-                            {% trans "I have read the instructions above and I will follow them to complete this form" %}
-                        </strong>
+                <div class="checkbox">
+                    <input type="checkbox" id="require_accept_terms_checkbox">
+                    <label for="require_accept_terms_checkbox">
+                        <h6>
+                            <strong>{% trans "I have read the instructions above and I will follow them to complete this form" %}</strong>
+                        </h6>
                     </label>
                 </div>
             {% endif %}
