@@ -67,7 +67,8 @@ def show_user_page(wizard):
 @method_decorator(csp_update(IMG_SRC="https://www.gravatar.com"), name='dispatch')
 class SubmitWizard(EventPageMixin, SensibleBackWizardMixin, NamedUrlSessionWizardView):
     condition_dict = {'questions': show_questions_page, 'user': show_user_page}
-    file_storage = FileSystemStorage(str(Path(settings.MEDIA_ROOT) / 'avatars'))
+    file_storage = FileSystemStorage(
+        str(Path(settings.MEDIA_ROOT) / 'avatars'))
     form_list = [UserForm]
 
     def dispatch(self, request, *args, **kwargs):
@@ -83,7 +84,8 @@ class SubmitWizard(EventPageMixin, SensibleBackWizardMixin, NamedUrlSessionWizar
         if not request.event.cfp.is_open and not self.access_code:
             messages.error(request, phrases.cfp.submissions_closed)
             return redirect(
-                reverse('cfp:event.start', kwargs={'event': request.event.slug})
+                reverse('cfp:event.start', kwargs={
+                        'event': request.event.slug})
             )
         return super().dispatch(request, *args, **kwargs)
 
@@ -102,20 +104,24 @@ class SubmitWizard(EventPageMixin, SensibleBackWizardMixin, NamedUrlSessionWizar
         kwargs = super().get_form_kwargs(step)
         if step in ['info', 'profile', 'questions']:
             kwargs['event'] = self.request.event
-            kwargs['field_configuration'] = self.request.event.cfp_workflow.steps_dict.get(step, {}).get('fields')
+            kwargs['field_configuration'] = self.request.event.cfp_workflow.steps_dict.get(
+                step, {}).get('fields')
         if step == 'profile':
             user_data = self.get_cleaned_data_for_step('user') or dict()
             if user_data and user_data.get('user_id'):
-                kwargs['user'] = User.objects.filter(pk=user_data['user_id']).first()
+                kwargs['user'] = User.objects.filter(
+                    pk=user_data['user_id']).first()
             if not kwargs.get('user') and self.request.user.is_authenticated:
                 kwargs['user'] = self.request.user
             user = kwargs.get('user')
-            kwargs['name'] = user.name if user else user_data.get('register_name')
+            kwargs['name'] = user.name if user else user_data.get(
+                'register_name')
             kwargs['read_only'] = False
             kwargs['essential_only'] = True
         if step == 'questions':
             kwargs['target'] = ''
-            kwargs['track'] = (self.get_cleaned_data_for_step('info') or dict()).get('track')
+            kwargs['track'] = (self.get_cleaned_data_for_step(
+                'info') or dict()).get('track')
             if not self.request.user.is_anonymous:
                 kwargs['speaker'] = self.request.user
         if step == 'info':
@@ -130,7 +136,8 @@ class SubmitWizard(EventPageMixin, SensibleBackWizardMixin, NamedUrlSessionWizar
                 if request_value:
                     with suppress(AttributeError, TypeError):
                         pk = int(request_value.split('-'))
-                        obj = model.objects.filter(event=self.request.event, pk=pk).first()
+                        obj = model.objects.filter(
+                            event=self.request.event, pk=pk).first()
                         if obj:
                             initial[field] = obj
         return initial
@@ -153,7 +160,8 @@ class SubmitWizard(EventPageMixin, SensibleBackWizardMixin, NamedUrlSessionWizar
             )
             if phase == 'current':
                 phase = 'todo'
-        step_list.append({'phase': 'todo', 'label': _('Done!'), 'icon': 'check'})
+        step_list.append(
+            {'phase': 'todo', 'label': _('Done!'), 'icon': 'check'})
         context['step_list'] = step_list
 
         step_info = self.event.cfp_workflow.steps_dict.get(step, {})
@@ -166,7 +174,8 @@ class SubmitWizard(EventPageMixin, SensibleBackWizardMixin, NamedUrlSessionWizar
             data = self.get_cleaned_data_for_step('user') or dict()
             email = data.get('register_email', '')
         if email:
-            context['gravatar_parameter'] = User(email=email).gravatar_parameter
+            context['gravatar_parameter'] = User(
+                email=email).gravatar_parameter
         return context
 
     def get_template_names(self):
@@ -215,6 +224,16 @@ class SubmitWizard(EventPageMixin, SensibleBackWizardMixin, NamedUrlSessionWizar
         sub = form_dict['info'].instance
         form_dict['profile'].user = user
         form_dict['profile'].save()
+
+        # DiF persistance
+        dif_data = form_dict['dif']
+        support_needed = dif_data['travel_support_required']
+        if support_needed:
+            form_dict['dif'].event = self.request.event
+            form_dict['dif'].submission = sub
+            form_dict['dif'].instance.user = user
+            form_dict['dif'].save()
+
         if 'questions' in form_dict:
             form_dict['questions'].speaker = user
             form_dict['questions'].submission = form_dict['info'].instance
@@ -233,7 +252,8 @@ class SubmitWizard(EventPageMixin, SensibleBackWizardMixin, NamedUrlSessionWizar
             if self.request.event.settings.mail_on_new_submission:
                 MailTemplate(
                     event=self.request.event,
-                    subject=_('New submission!').format(event=self.request.event.slug),
+                    subject=_('New submission!').format(
+                        event=self.request.event.slug),
                     text=self.request.event.settings.mail_text_new_submission,
                 ).to_mail(
                     user=self.request.event.email,
@@ -242,7 +262,8 @@ class SubmitWizard(EventPageMixin, SensibleBackWizardMixin, NamedUrlSessionWizar
                     skip_queue=True,
                     locale=self.request.event.locale,
                 )
-            additional_speaker = form_dict['info'].cleaned_data.get('additional_speaker').strip()
+            additional_speaker = form_dict['info'].cleaned_data.get(
+                'additional_speaker').strip()
             if additional_speaker:
                 sub.send_invite(to=[additional_speaker], _from=user)
         except SendMailException as exception:
